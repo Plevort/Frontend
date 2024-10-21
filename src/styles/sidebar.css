@@ -9,6 +9,9 @@
     flex-direction: column;
 }
 
+h2 {
+    margin-bottom: 10px;
+}
 .friend-list {
     list-style-type: none;
     padding: 0;
@@ -35,9 +38,10 @@
 }
 
 .status-indicator.online {
-    background-color: #43b581; /* online = gren = simple dimple */
+    background-color: #43b581;
 }
 
 .status-indicator.offline {
-    background-color: #747f8d; /* gay, oh i mean gray = offline = simpl */
+    background-color: #747f8d;
 }
+
