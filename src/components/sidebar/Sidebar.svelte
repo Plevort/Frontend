@@ -1,22 +1,19 @@
 <script>
-  // Example friends list (you probably have none :D)
-  let friends = [
-      { name: "Alice", online: true },
-      { name: "Bob", online: false },
-      { name: "Charlie", online: true },
-      { name: "Dave", online: true },
-  ];
+  export let chats;
+  import { createEventDispatcher } from 'svelte';
 
+  const dispatch = createEventDispatcher();
+
+  function selectChat(chat) {
+    dispatch('selectChat', chat);
+  }
 </script>
 
 <aside class="sidebar">
-  <h2>Friends</h2>
-  <ul class="friend-list">
-      {#each friends as friend}
-          <li class={friend.online ? 'online' : 'offline'}>
-              {friend.name}
-              <span class="status-indicator {friend.online ? 'online' : 'offline'}"></span>
-          </li>
+  <h2>Chats</h2>
+  <ul class="chat-list">
+      {#each chats as chat}
+          <li on:click={() => selectChat(chat)}>{chat.name}</li>
       {/each}
   </ul>
 </aside>
