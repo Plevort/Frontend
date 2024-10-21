@@ -1,0 +1,43 @@
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: #2f3136;
+    color: white;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.friend-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.friend-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.friend-list li:hover {
+    background-color: #3a3b3c;
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: auto;
+}
+
+.status-indicator.online {
+    background-color: #43b581; /* online = gren = simple dimple */
+}
+
+.status-indicator.offline {
+    background-color: #747f8d; /* gay, oh i mean gray = offline = simpl */
+}

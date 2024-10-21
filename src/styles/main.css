@@ -1,0 +1,8 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #202225;
+    color: white;
+    overflow: hidden;
+}
