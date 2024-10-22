@@ -1,7 +1,6 @@
 <script>
     import { writable } from 'svelte/store';
 
-
     const email = writable('');
     const password = writable('');
     const passwordConfirm = writable('');
@@ -9,12 +8,10 @@
     const error = writable('');
     const success = writable('');
 
-
     const registerUser = async () => {
-        error.set('')
-        success.set(''); 
+        error.set('');
+        success.set('');
 
-  
         const userData = {
             email: $email,
             password: $password,
@@ -23,7 +20,6 @@
         };
 
         try {
-
             const response = await fetch('https://plevortapi.fryde.id.lv/v1/register', {
                 method: 'POST',
                 headers: {
@@ -33,19 +29,17 @@
             });
 
             if (response.ok) {
-                const data = await response.json(); 
-
-                const token = data.token;  
-                localStorage.setItem('token', token); 
-
-                success.set(data.message || 'Registration successful!'); 
+                const data = await response.json();
+                const token = data.token;
+                localStorage.setItem('token', token);
+                success.set(data.message || 'Registration successful!');
             } else {
                 const data = await response.json();
                 error.set(data.error || 'An unexpected error occurred.');
             }
         } catch (err) {
             console.error(err); // Log any errors
-            error.set('Network error. Please try again later.'); 
+            error.set('Network error. Please try again later.');
         }
     };
 
@@ -69,7 +63,7 @@
 
             <label>
                 <input type="checkbox" required /> I accept the <a href="../../privacyandterms">Privacy Policy and TOS</a> 
-                <p>if the page looks weird please refresh it and there should be a white background. some bug</p>
+                <p>if the TOS page looks weird please refresh it and there should be a white background. some bug</p>
             </label>
             
             <button type="submit">Register</button>
@@ -81,5 +75,13 @@
                 <p class="success">Success: {$success}</p> 
             {/if}
         </form>
+
+        <!-- Button to redirect to the login page -->
+        <div class="login-redirect">
+            <p>Already registered? </p>
+            <button on:click={() => window.location.href = '../../login'}>
+                Login
+            </button>
+        </div>
     </div>
 </main>

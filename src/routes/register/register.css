@@ -75,3 +75,20 @@ button:hover {
 label {
     color: #f0f0f0;
 }
+.login-redirect {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.login-redirect button {
+    background-color: #007BFF; /* Button color */
+    color: white; /* Text color */
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.login-redirect button:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+}
