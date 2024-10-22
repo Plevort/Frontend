@@ -1,61 +1,85 @@
-<!-- src/routes/friendmanagement/+page.svelte -->
 <script>
     import { onMount } from 'svelte';
     import { socketStore } from '../../stores/socket.js'; // Adjust path if necessary
+    import { get } from 'svelte/store';
 
     let friends = []; // Array to hold friends list
     let incomingRequests = []; // Array to hold incoming friend requests
     let socket;
 
-    // Use the socket store
     onMount(() => {
         const unsubscribe = socketStore.subscribe(value => {
             socket = value; // Subscribe to the socket store to get the socket instance
         });
 
-        // Example: Fetch friends and incoming requests (replace with actual implementation)
-        fetchFriends();
-        fetchIncomingRequests();
+        if (socket) {
+            // Fetch friends and incoming requests
+            fetchFriends();
+            fetchIncomingRequests();
+
+            // Set up socket event listeners for real-time updates
+            socket.on('friend added', fetchFriends); // Assuming you emit 'friend added' on your backend
+            socket.on('request updated', fetchIncomingRequests); // Emit event when requests are updated
+        }
 
         return () => {
             unsubscribe(); // Unsubscribe when the component is destroyed
         };
     });
 
-    const fetchFriends = () => {
-        // Replace with actual socket or API call to fetch friends
-        friends = [
-            { id: 1, name: 'John Doe' },
-            { id: 2, name: 'Jane Smith' },
-            { id: 3, name: 'Alice Johnson' },
-            { id: 4, name: 'Bob Brown' },
-        ];
+    const fetchFriends = async () => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('token'); // Get the token from local storage
+            const response = await fetch('https://plevortapi.fryde.id.lv/v1/friend/friends', {
+                headers: {
+                    'Authorization': `Bearer ${token}` // Send token in the headers
+                }
+            });
+
+            if (response.ok) {
+                friends = await response.json(); // Fetch actual friends list
+            } else {
+                console.error('Failed to fetch friends:', response.statusText);
+            }
+        }
     };
 
-    const fetchIncomingRequests = () => {
-        // Replace with actual socket or API call to fetch incoming friend requests
-        incomingRequests = [
-            { id: 5, name: 'Tom Green' },
-            { id: 6, name: 'Emily White' },
-        ];
+    const fetchIncomingRequests = async () => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('token'); // Get the token from local storage
+            const response = await fetch('https://plevortapi.fryde.id.lv/v1/friend/incoming', {
+                headers: {
+                    'Authorization': `Bearer ${token}` // Send token in the headers
+                }
+            });
+
+            if (response.ok) {
+                incomingRequests = await response.json(); // Fetch actual incoming requests
+            } else {
+                console.error('Failed to fetch incoming requests:', response.statusText);
+            }
+        }
     };
 
     const acceptRequest = (id) => {
-        // Emit socket event to accept the friend request
-        socket.emit('accept friend request', { requesterId: id });
-        incomingRequests = incomingRequests.filter(req => req.id !== id); // Remove from the incoming requests
+        if (socket) {
+            socket.emit('accept friend request', { requesterId: id });
+            incomingRequests = incomingRequests.filter(req => req.id !== id); // Remove from the incoming requests
+        }
     };
 
     const denyRequest = (id) => {
-        // Emit socket event to deny the friend request
-        socket.emit('deny friend request', { requesterId: id });
-        incomingRequests = incomingRequests.filter(req => req.id !== id); // Remove from the incoming requests
+        if (socket) {
+            socket.emit('deny friend request', { requesterId: id });
+            incomingRequests = incomingRequests.filter(req => req.id !== id); // Remove from the incoming requests
+        }
     };
 
     const removeFriend = (id) => {
-        // Emit socket event to remove a friend
-        socket.emit('remove friend', { friendId: id });
-        friends = friends.filter(friend => friend.id !== id); // Remove from the friends list
+        if (socket) {
+            socket.emit('remove friend', { friendId: id });
+            friends = friends.filter(friend => friend.id !== id); // Remove from the friends list
+        }
     };
 </script>
 
