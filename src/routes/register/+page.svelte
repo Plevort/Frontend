@@ -32,7 +32,6 @@
             if (response.ok) {
                 const data = await response.json();
                 
-                // Save the token to localStorage
                 const token = data.token;
                 localStorage.setItem('token', token);
 
@@ -68,7 +67,6 @@
 
             <label>
                 <input type="checkbox" required /> I accept the <a href="/privacyandterms">Privacy Policy and TOS</a> 
-                <p>if the TOS page looks weird please refresh it and there should be a white background. some bug</p>
             </label>
             
             <button type="submit">Register</button>
@@ -81,7 +79,6 @@
             {/if}
         </form>
 
-        <!-- Button to redirect to the login page -->
         <div class="login-redirect">
             <p>Already registered? </p>
             <button on:click={() => window.location.href = '../../login'}>
@@ -92,7 +89,6 @@
 </main>
 
 <style> 
-    /* Set up the entire page to center the form */
 html, body {
     margin: 0;
     padding: 0;
@@ -112,7 +108,6 @@ main {
     height: 100vh;
 }
 
-/* Style the registration box */
 .register-box {
     background-color: #222;
     padding: 2rem;
