@@ -1,3 +1,4 @@
+/* login.css */
 html, body {
     margin: 0;
     padding: 0;
@@ -69,4 +70,24 @@ button:hover {
 
 label {
     color: #f0f0f0;
+}
+
+.register-redirect {
+    text-align: center; /* Center the content inside the redirect div */
+    margin-top: 20px; /* Add some space above the button */
+}
+
+.small-button {
+    padding: 8px 12px; /* Smaller padding for the button */
+    font-size: 14px; /* Smaller font size */
+    border: none; /* Remove default border */
+    border-radius: 3px; /* Rounded corners */
+    background-color: #007bff; /* Bootstrap primary color */
+    color: white; /* White text color */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s; /* Smooth transition */
+}
+
+.small-button:hover {
+    background-color: #0056b3; /* Darker shade on hover */
 }

@@ -30,9 +30,15 @@
 
             if (response.ok) {
                 const data = await response.json();
+                
+                // Save the token to localStorage
                 const token = data.token;
                 localStorage.setItem('token', token);
+
                 success.set(data.message || 'Registration successful!');
+
+                // Redirect to homepage
+                window.location.href = '/';
             } else {
                 const data = await response.json();
                 error.set(data.error || 'An unexpected error occurred.');

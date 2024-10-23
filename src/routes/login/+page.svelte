@@ -1,5 +1,6 @@
 <script>
     import { writable } from 'svelte/store';
+    import './login.css'; // Import the CSS file
 
     const email = writable('');
     const password = writable('');
@@ -32,6 +33,9 @@
                 localStorage.setItem('token', token);
 
                 success.set(data.message || 'Login successful!');
+
+                // Redirect to homepage
+                window.location.href = '/';
             } else {
                 const data = await response.json();
                 error.set(data.error || 'An unexpected error occurred.');
@@ -41,8 +45,6 @@
             error.set('Network error. Please try again later.');
         }
     };
-
-    import './login.css';
 </script>
 
 <main>
@@ -63,5 +65,13 @@
                 <p class="success">Success: {$success}</p>
             {/if}
         </form>
+
+        <!-- Button to return to the register page -->
+        <div class="register-redirect">
+            <p>Don't have an account?</p>
+            <button class="small-button" on:click={() => window.location.href = '/register'}>
+                Return to Register
+            </button>
+        </div>
     </div>
 </main>
