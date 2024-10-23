@@ -30,11 +30,11 @@
   }
 
   function goToaddchat() {
-      goto('/addchat'); 
+      goto('/createchat'); 
   }
 
   function goToFriendManagement() {
-      goto('/friendmanagement'); // Navigate to the friend management page
+      goto('/friends'); // Navigate to the friend management page
   }
 </script>
 
@@ -157,8 +157,8 @@
       <h1 class="title">Chats</h1>
   </div>
   <div class="buttons">
-      <button on:click={goToaddchat}>Add Chat</button>
-      <button on:click={goToFriendManagement}>Friend Management</button>
+      <button on:click={goToaddchat}>Message</button>
+      <button on:click={goToFriendManagement}>Friends</button>
   </div>
   
   <div class="user-list">

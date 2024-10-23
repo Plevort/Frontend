@@ -68,7 +68,7 @@
             <input type="text" id="username" bind:value={$username} placeholder="e.g., johndoe123" required />
 
             <label>
-                <input type="checkbox" required /> I accept the <a href="../../privacyandterms">Privacy Policy and TOS</a> 
+                <input type="checkbox" required /> I accept the <a href="/privacyandterms">Privacy Policy and TOS</a> 
                 <p>if the TOS page looks weird please refresh it and there should be a white background. some bug</p>
             </label>
             

@@ -1,3 +1,4 @@
+<main>   
     <h1>Privacy Policy and Terms of Service</h1>
     <p><strong>Effective Date:</strong> 21.10.2024</p>
     <p><strong>Last Updated:</strong> 22.10.2024</p>
@@ -51,3 +52,4 @@
 
     <h3>8. Governing Law</h3>
     <p>The laws of Latvia and applicable local laws govern these terms.</p>
+</main>
