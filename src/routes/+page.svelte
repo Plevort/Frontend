@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import Sidebar from "$lib/Sidebar.svelte";
-  import "../styles/homepage.css";
+  import "$lib/global.css";
 
 //  onMount(() => {
   //  const token = localStorage.getItem("token");
