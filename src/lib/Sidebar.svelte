@@ -1,64 +1,100 @@
-<!-- src/routes/sidebar.svelte -->
+<!-- src/lib/Sidebar.svelte -->
 <script>
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { writable } from 'svelte/store';
-  import { socketStore } from '../stores/socket.js'; // Adjust the path as needed
-
-  let users = [
-      { id: 1, name: 'John Doe', lastMessage: 'Hey there!', pfp: 'https://plevort.fryde.id.lv/default.png' },
-      { id: 2, name: 'Jane Smith', lastMessage: 'Let\'s catch up!', pfp: 'https://plevort.fryde.id.lv/default.png' },
-      { id: 3, name: 'Alice Johnson', lastMessage: 'Are you coming?', pfp: 'https://plevort.fryde.id.lv/default.png' },
-      { id: 4, name: 'Bob Brown', lastMessage: 'See you later!', pfp: 'https://plevort.fryde.id.lv/default.png' },
-  ];
-
-  let socket;
-
-  // Use the socket store
-  onMount(() => {
-      const unsubscribe = socketStore.subscribe(value => {
-          socket = value;
-      });
-
-      return () => {
-          unsubscribe(); // Unsubscribe when the component is destroyed
-      };
-  });
-
-  function goToChat(id) {
-      goto(`/chat/${id}`);
-  }
-
-  function goToaddchat() {
-      goto('/createchat'); 
-  }
-
-  function goToFriendManagement() {
-      goto('/friends'); // Navigate to the friend management page
-  }
-</script>
-
-<div class="sidebar">
-  <div class="sidebar-header">
-      <h1 class="title">Chats</h1>
-  </div>
-  <div class="buttons">
-      <button on:click={goToaddchat}>Message</button>
-      <button on:click={goToFriendManagement}>Friends</button>
-  </div>
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+    import { writable } from 'svelte/store';
+    import { socketStore } from '../stores/socket.js'; // Adjust the path as needed
   
-  <div class="user-list">
-      {#each users as user}
-          <div class="user" on:click={() => goToChat(user.id)}>
-              <img src={user.pfp} alt={user.name} class="profile-pic" />
-              <div class="user-details">
-                  <p class="user-name">{user.name}</p>
-                  <p class="last-message">{user.lastMessage}</p>
-              </div>
-          </div>
-      {/each}
+    let chats = [];
+    let socket;
+  
+    // Fetch chats from API
+    async function fetchChats() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found in localStorage. Please log in again.');
+            return;
+        }
+  
+        const response = await fetch('https://plevortapi.fryde.id.lv/v1/chat/list', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+  
+        if (response.ok) {
+            const data = await response.json();
+            chats = data.map(chat => ({
+                id: chat.id,
+                name: chat.name,
+                lastMessage: chat.lastMessage || '', 
+                pfp: 'https://plevort.fryde.id.lv/default.png' 
+            }));
+        } else {
+            console.error('Failed to fetch chats:', response.statusText);
+        }
+    }
+  
+    onMount(() => {
+        const unsubscribe = socketStore.subscribe(value => {
+            socket = value;
+        });
+  
+        fetchChats();
+  
+        if (socket) {
+            socket.on('chat_update', () => {
+                fetchChats();
+            });
+        }
+  
+        return () => {
+            unsubscribe(); 
+            if (socket) {
+                socket.off('chat_update');
+            }
+        };
+    });
+  
+    function goToChat(id) {
+        goto(`/chat/${id}`);
+    }
+  
+    function goToAddChat() {
+        goto('/createchat'); 
+    }
+  
+    function goToFriendManagement() {
+        goto('/friends'); 
+    }
+  </script>
+  
+  <div class="sidebar">
+    <div class="sidebar-header">
+        <h1 class="title">Chats</h1>
+    </div>
+    <div class="buttons">
+        <button on:click={goToAddChat}>Message</button>
+        <button on:click={goToFriendManagement}>Friends</button>
+    </div>
+    
+    <div class="user-list">
+        {#if chats.length > 0}
+            {#each chats as chat}
+                <div class="user" on:click={() => goToChat(chat.id)}>
+                    <img src={chat.pfp} alt={chat.name} class="profile-pic" />
+                    <div class="user-details">
+                        <p class="user-name">{chat.name}</p>
+                        <p class="last-message">{chat.lastMessage}</p>
+                    </div>
+                </div>
+            {/each}
+        {:else}
+            <p>No chats</p>
+        {/if}
+    </div>
   </div>
-</div>
 
 <style> 
     .sidebar {
