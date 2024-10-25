@@ -27,41 +27,42 @@
     }
 
     async function fetchMessages(page = 1, initialLoad = false) {
-        loading.set(true);
-        try {
-            const res = await fetch(`https://plevortapi.fryde.id.lv/v1/message/read?cid=${chatId}&p=${page}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            const data = await res.json();
-
-            if (data.messages.length === 0) {
-                canLoadMore.set(false);
-            } else {
-                const fetchedMessages = data.messages;
-
-                if (initialLoad) {
-                    messages.set(fetchedMessages);
-                    scrollToBottom();
-                } else {
-                    const previousHeight = chatContainer.scrollHeight;
-                    messages.update(current => [...fetchedMessages, ...current]); // Older messages added to the top
-
-                    setTimeout(() => {
-                        const newHeight = chatContainer.scrollHeight;
-                        chatContainer.scrollTop = newHeight - previousHeight;
-                    }, 0);
-                }
-
-                currentPage = page;
+    loading.set(true);
+    try {
+        const res = await fetch(`https://plevortapi.fryde.id.lv/v1/message/read?cid=${chatId}&p=${page}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
             }
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-        } finally {
-            loading.set(false);
+        });
+        const data = await res.json();
+
+        if (data.messages.length === 0) {
+            canLoadMore.set(false);
+        } else {
+            const fetchedMessages = data.messages.reverse();
+
+            if (initialLoad) {
+                messages.set(fetchedMessages);
+                scrollToBottom();
+            } else {
+                const previousHeight = chatContainer.scrollHeight;
+
+                messages.update(current => [...current, ...fetchedMessages]);
+
+                setTimeout(() => {
+                    const newHeight = chatContainer.scrollHeight;
+                    chatContainer.scrollTop = newHeight - previousHeight;
+                }, 0);
+            }
+
+            currentPage = page;
         }
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+    } finally {
+        loading.set(false);
     }
+}
 
     async function sendMessage() {
         if (!newMessage.trim()) return;
