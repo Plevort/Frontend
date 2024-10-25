@@ -5,7 +5,7 @@
     import Sidebar from '$lib/Sidebar.svelte';
     import '$lib/global.css';
 
-    let messages = writable([]);
+    let messages = writable([]); // Stores chat messages
     let currentPage = 1;
     let chatId = '';
     let loading = writable(false);
@@ -29,7 +29,7 @@
     async function fetchMessages(page = 1, initialLoad = false) {
         loading.set(true);
         try {
-            const res = await fetch(`https://plevortbeta.fryde.id.lv/v1/message/read?cid=${chatId}&p=${page}`, {
+            const res = await fetch(`https://plevortapi.fryde.id.lv/v1/message/read?cid=${chatId}&p=${page}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -39,14 +39,14 @@
             if (data.messages.length === 0) {
                 canLoadMore.set(false);
             } else {
-                const fetchedMessages = data.messages.reverse();
+                const fetchedMessages = data.messages;
 
                 if (initialLoad) {
                     messages.set(fetchedMessages);
                     scrollToBottom();
                 } else {
                     const previousHeight = chatContainer.scrollHeight;
-                    messages.update(current => [...fetchedMessages, ...current]);
+                    messages.update(current => [...fetchedMessages, ...current]); // Older messages added to the top
 
                     setTimeout(() => {
                         const newHeight = chatContainer.scrollHeight;
@@ -67,7 +67,7 @@
         if (!newMessage.trim()) return;
         isSending.set(true);
         try {
-            const res = await fetch(`https://plevortbeta.fryde.id.lv/v1/message/send`, {
+            const res = await fetch(`https://plevortapi.fryde.id.lv/v1/message/send`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -81,11 +81,7 @@
             const data = await res.json();
             
             if (data.messageId) {
-                messages.update(current => [
-                    ...current,
-                    { cnt: newMessage, uid: 'my-uid', createdAt: new Date().toISOString() }
-                ]);
-                newMessage = '';
+                newMessage = ''; // Clear the input without adding the message manually
                 scrollToBottom();
             }
         } catch (error) {
@@ -110,14 +106,14 @@
         token = localStorage.getItem('token');
         fetchMessages(1, true);
 
-        socket = io('https://plevortbeta.fryde.id.lv');
+        socket = io('https://plevortapi.fryde.id.lv');
         socket.on('connect', () => {
             socket.emit('joinChat', chatId);
         });
 
         socket.on('newMessage', (message) => {
             if (message.chatId === chatId) {
-                messages.update(current => [...current, message]);
+                messages.update(current => [message, ...current]); // Add new messages at the top
                 scrollToBottom();
             }
         });

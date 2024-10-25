@@ -13,7 +13,7 @@
         }
 
         console.log('Fetching chats...');
-        const response = await fetch('https://plevortbeta.fryde.id.lv/v1/chat/list', {
+        const response = await fetch('https://plevortapi.fryde.id.lv/v1/chat/list', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`

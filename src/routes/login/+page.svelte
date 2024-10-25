@@ -20,7 +20,7 @@
         };
 
         try {
-            const response = await fetch('https://plevortbeta.fryde.id.lv/v1/login', { 
+            const response = await fetch('https://plevortapi.fryde.id.lv/v1/login', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
