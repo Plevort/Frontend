@@ -1,43 +1,59 @@
 <script>
     import { onMount } from 'svelte';
     import { writable } from 'svelte/store';
-    import '$lib/global.css'; 
+    import { io } from 'socket.io-client';
     import Sidebar from '$lib/Sidebar.svelte';
+    import '$lib/global.css';
 
     let messages = writable([]);
-    let currentPage = 1; 
-    let chatId = ''; 
-    let loading = writable(false); 
-    let canLoadMore = writable(true); 
-    let isSending = writable(false); 
-    let newMessage = ''; 
-    let token = ''; 
-    let chatContainer; 
-    let showSidebar = false; 
-
-    const isBrowser = typeof window !== 'undefined';
+    let currentPage = 1;
+    let chatId = '';
+    let loading = writable(false);
+    let canLoadMore = writable(true);
+    let isSending = writable(false);
+    let newMessage = '';
+    let token = '';
+    let chatContainer;
+    let showSidebar = writable(false);
+    let isDesktop = writable(false);
+    let socket;
 
     function scrollToBottom() {
         if (chatContainer) {
-            chatContainer.scrollTop = chatContainer.scrollHeight; 
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
     }
 
-    async function fetchMessages(page = 1) {
+    async function fetchMessages(page = 1, initialLoad = false) {
         loading.set(true);
         try {
-            const res = await fetch(`https://plevortapi.fryde.id.lv/v1/message/read?cid=${chatId}&p=${page}`, {
+            const res = await fetch(`https://plevortbeta.fryde.id.lv/v1/message/read?cid=${chatId}&p=${page}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
             const data = await res.json();
+
             if (data.messages.length === 0) {
-                canLoadMore.set(false); 
+                canLoadMore.set(false);
             } else {
-                messages.update(current => [...current, ...data.messages]);
+                const fetchedMessages = data.messages.reverse();
+
+                if (initialLoad) {
+                    messages.set(fetchedMessages);
+                    setTimeout(scrollToBottom, 0);
+                } else {
+                    const previousHeight = chatContainer.scrollHeight;
+
+                    messages.update(current => [...fetchedMessages, ...current]);
+
+                    setTimeout(() => {
+                        const newHeight = chatContainer.scrollHeight;
+                        chatContainer.scrollTop = newHeight - previousHeight;
+                    }, 0);
+                }
+
                 currentPage = page;
-                scrollToBottom(); 
             }
         } catch (error) {
             console.error('Error fetching messages:', error);
@@ -50,7 +66,7 @@
         if (!newMessage.trim()) return;
         isSending.set(true);
         try {
-            const res = await fetch(`https://plevortapi.fryde.id.lv/v1/message/send`, {
+            const res = await fetch(`https://plevortbeta.fryde.id.lv/v1/message/send`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -64,6 +80,8 @@
             const data = await res.json();
             if (data.messageId) {
                 messages.update(current => [...current, { cnt: newMessage, uid: 'my-uid', createdAt: new Date().toISOString() }]);
+
+                messages.update(current => [...current, { cnt: newMessage, uid: 'my-uid', createdAt: new Date().toISOString() }]);
                 newMessage = '';
                 scrollToBottom();
             }
@@ -75,28 +93,76 @@
     }
 
     function toggleSidebar() {
-        showSidebar = !showSidebar;
+        showSidebar.update(value => !value);
+    }
+
+    function handleScroll() {
+        if (chatContainer && chatContainer.scrollTop === 0 && $canLoadMore) {
+            fetchMessages(currentPage + 1);
+        }
     }
 
     onMount(() => {
-        if (isBrowser) {
-            const path = window.location.pathname;
-            chatId = path.split('/').pop();
-            token = localStorage.getItem('token');
-            fetchMessages();
-        }
+        chatId = window.location.pathname.split('/').pop();
+        token = localStorage.getItem('token');
+        fetchMessages(1, true);
+
+        // Initialize Socket.IO client
+        socket = io('https://plevortbeta.fryde.id.lv');
+        socket.on('connect', () => {
+            socket.emit('joinChat', chatId);
+        });
+
+        socket.on('newMessage', (message) => {
+            if (message.chatId === chatId) {
+                messages.update(current => [...current, message]);
+                scrollToBottom();
+            }
+        });
+
+        const updateScreenWidth = () => {
+            isDesktop.set(window.innerWidth >= 776);
+            if (window.innerWidth >= 776) {
+                showSidebar.set(true);
+            } else {
+                showSidebar.set(false);
+            }
+        };
+
+        updateScreenWidth();
+        window.addEventListener('resize', updateScreenWidth);
+
+        return () => {
+            window.removeEventListener('resize', updateScreenWidth);
+            socket.disconnect();
+        };
     });
 </script>
 
-<button class="hamburger-left" on:click={toggleSidebar} style="display: {showSidebar ? 'none' : 'block'};">☰</button>
+
+
+
+{#if !$isDesktop && !$showSidebar}
+    <button class="sidebar-toggle" on:click={toggleSidebar} aria-label="Toggle Sidebar">≡</button>
+{/if}
 
 <div class="chat-wrapper">
-    {#if showSidebar}
-        <Sidebar /> 
+    {#if $showSidebar && !$isDesktop}
+        <div class="sidebar-fullscreen">
+            <Sidebar on:close={() => showSidebar.set(false)} />
+            <button class="close-sidebar" on:click={() => showSidebar.set(false)}>✕</button>
+        </div>
+    {/if}
+
+    {#if $isDesktop}
+        <Sidebar />
     {/if}
 
     <div class="chat-container" bind:this={chatContainer}>
         <div class="chat-content">
+            {#if $loading}
+                <p class="loading">Loading more messages...</p>
+            {/if}
             {#each $messages as message}
                 <div class="message {message.uid === 'my-uid' ? 'my-message' : 'other-message'}">
                     <p>{message.cnt}</p>
@@ -111,10 +177,7 @@
     </div>
 </div>
 
-<button class="hamburger-right" on:click={toggleSidebar} style="display: {showSidebar ? 'none' : 'block'};">☰</button>
-
 <style>
-    /* General layout */
     .chat-wrapper {
         display: flex;
         height: 100vh;
@@ -125,14 +188,14 @@
         display: flex;
         flex-direction: column;
         background-color: #2c2c2c;
+        overflow-y: auto;
     }
 
     .chat-content {
         flex-grow: 1;
         padding: 20px;
-        overflow-y: auto;
         display: flex;
-        flex-direction: column; 
+        flex-direction: column-reverse;
     }
 
     .send-message {
@@ -150,6 +213,7 @@
         border: none;
         background-color: #333;
         color: white;
+        resize: none;
     }
 
     button {
@@ -172,6 +236,7 @@
         border-radius: 5px;
         max-width: 60%;
         word-wrap: break-word;
+        word-break: break-word;
     }
 
     .my-message {
@@ -184,42 +249,53 @@
         margin-right: auto;
     }
 
-    .hamburger-left {
-        display: none;
+    .sidebar-toggle {
         position: absolute;
         top: 10px;
         left: 10px;
         background: none;
         border: none;
-        font-size: 30px;
+        font-size: 24px;
         color: #fff;
         z-index: 1001;
+        cursor: pointer;
     }
 
-    .hamburger-right {
-        display: none;
+    .sidebar-fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #1c1c1c;
+        z-index: 1002;
+    }
+
+    .close-sidebar {
         position: absolute;
         top: 10px;
         right: 10px;
         background: none;
         border: none;
-        font-size: 30px;
+        font-size: 24px;
         color: #fff;
-        z-index: 1001;
+        cursor: pointer;
     }
 
-    @media (max-width: 768px) {
-        .hamburger-left {
-            display: block; 
-        }
-        .hamburger-right {
-            display: block; 
-        }
+    .chat-container {
+        border: none;
     }
 
-    @media (min-width: 769px) {
-        .hamburger-left, .hamburger-right {
-            display: none; 
+    .loading {
+        text-align: center;
+        font-size: 0.9em;
+        color: #aaa;
+        margin: 10px 0;
+    }
+
+    @media (min-width: 776px) {
+        .sidebar-toggle {
+            display: none;
         }
     }
 </style>

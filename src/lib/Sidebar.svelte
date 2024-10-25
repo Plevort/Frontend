@@ -13,7 +13,7 @@
         }
 
         console.log('Fetching chats...');
-        const response = await fetch('https://plevortapi.fryde.id.lv/v1/chat/list', {
+        const response = await fetch('https://plevortbeta.fryde.id.lv/v1/chat/list', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -39,6 +39,16 @@
         window.location.href = `/chat/${id}`; 
     }
 
+    function navigateToFriends() {
+        console.log('Navigating to friends page');
+        window.location.href = '/friends';
+    }
+
+    function createNewChat() {
+        console.log('Creating a new chat');
+        window.location.href = '/create-chat';
+    }
+
     onMount(() => {
         console.log('Sidebar component mounted, fetching chats...');
         fetchChats();
@@ -48,6 +58,10 @@
 <div class="sidebar">
     <div class="sidebar-header">
         <h1 class="title">Chats</h1>
+        <div class="button-container">
+            <button class="sidebar-button" on:click={navigateToFriends}>Friends</button>
+            <button class="sidebar-button" on:click={createNewChat}>Create Chat</button>
+        </div>
     </div>
     
     <div class="user-list">
@@ -75,6 +89,37 @@
         color: #fff;
         padding: 20px;
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column; /* Ensures children stack vertically */
+    }
+
+    .sidebar-header {
+        display: flex;
+        flex-direction: column; /* Stack title and buttons vertically */
+        align-items: flex-start; /* Align items to the left */
+    }
+
+    .button-container {
+        margin-bottom: 10px; /* Space below buttons */
+    }
+
+    .sidebar-button {
+        display: block; /* Ensure buttons take full width */
+        width: calc(100% - 20px); /* Adjust width for padding */
+        padding: 15px; /* Height of the button */
+        background-color: #333; 
+        color: #fff; 
+        border: none; 
+        border-radius: 5px; 
+        cursor: pointer; 
+        transition: background-color 0.3s ease;
+        margin-bottom: 10px; /* Space between buttons */
+        font-size: 16px; /* Increased font size for better readability */
+        text-align: center; /* Center text horizontally */
+    }
+
+    .sidebar-button:hover {
+        background-color: #555; 
     }
 
     .user-list {

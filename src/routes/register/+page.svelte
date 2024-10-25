@@ -21,7 +21,7 @@
         };
 
         try {
-            const response = await fetch('https://plevortapi.fryde.id.lv/v1/register', {
+            const response = await fetch('https://plevortbeta.fryde.id.lv/v1/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
