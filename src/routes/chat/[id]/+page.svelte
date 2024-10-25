@@ -19,9 +19,11 @@
     let socket;
 
     function scrollToBottom() {
-        if (chatContainer) {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
+        setTimeout(() => {
+            if (chatContainer) {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }, 0);
     }
 
     async function fetchMessages(page = 1, initialLoad = false) {
@@ -41,10 +43,9 @@
 
                 if (initialLoad) {
                     messages.set(fetchedMessages);
-                    setTimeout(scrollToBottom, 0);
+                    scrollToBottom();
                 } else {
                     const previousHeight = chatContainer.scrollHeight;
-
                     messages.update(current => [...fetchedMessages, ...current]);
 
                     setTimeout(() => {
@@ -78,10 +79,12 @@
                 })
             });
             const data = await res.json();
+            
             if (data.messageId) {
-                messages.update(current => [...current, { cnt: newMessage, uid: 'my-uid', createdAt: new Date().toISOString() }]);
-
-                messages.update(current => [...current, { cnt: newMessage, uid: 'my-uid', createdAt: new Date().toISOString() }]);
+                messages.update(current => [
+                    ...current,
+                    { cnt: newMessage, uid: 'my-uid', createdAt: new Date().toISOString() }
+                ]);
                 newMessage = '';
                 scrollToBottom();
             }
@@ -107,7 +110,6 @@
         token = localStorage.getItem('token');
         fetchMessages(1, true);
 
-        // Initialize Socket.IO client
         socket = io('https://plevortbeta.fryde.id.lv');
         socket.on('connect', () => {
             socket.emit('joinChat', chatId);
@@ -122,11 +124,7 @@
 
         const updateScreenWidth = () => {
             isDesktop.set(window.innerWidth >= 776);
-            if (window.innerWidth >= 776) {
-                showSidebar.set(true);
-            } else {
-                showSidebar.set(false);
-            }
+            showSidebar.set(window.innerWidth >= 776);
         };
 
         updateScreenWidth();
@@ -138,9 +136,6 @@
         };
     });
 </script>
-
-
-
 
 {#if !$isDesktop && !$showSidebar}
     <button class="sidebar-toggle" on:click={toggleSidebar} aria-label="Toggle Sidebar">≡</button>
@@ -158,7 +153,7 @@
         <Sidebar />
     {/if}
 
-    <div class="chat-container" bind:this={chatContainer}>
+    <div class="chat-container" bind:this={chatContainer} on:scroll={handleScroll}>
         <div class="chat-content">
             {#if $loading}
                 <p class="loading">Loading more messages...</p>
