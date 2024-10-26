@@ -62,6 +62,7 @@
         <button on:click={() => selectChatType('direct')}>Direct Message</button>
         <button class="inactive">Group</button>
         <button class="inactive">Server</button>
+        <button class="back-button" on:click={() => goto('/')}>Back</button>
     {:else if selectedChatType === 'direct'}
         <h2>Direct Message</h2> 
         <h2>Your Friends</h2>
@@ -73,7 +74,7 @@
                 </div>
             {/each}
         </div>
-        <button class="back-button" on:click={() => selectedChatType = null}>Back</button>
+        <button class="back-button" on:click={() => selectedChatType = null}>Back</button> <!-- Back button for friends list screen -->
     {/if}
 </div>
 

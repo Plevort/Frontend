@@ -5,7 +5,7 @@
     import Sidebar from '$lib/Sidebar.svelte';
     import '$lib/global.css';
 
-    let messages = writable([]); // Stores chat messages
+    let messages = writable([]);
     let currentPage = 1;
     let chatId = '';
     let loading = writable(false);
@@ -27,42 +27,42 @@
     }
 
     async function fetchMessages(page = 1, initialLoad = false) {
-    loading.set(true);
-    try {
-        const res = await fetch(`https://plevortapi.fryde.id.lv/v1/message/read?cid=${chatId}&p=${page}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        const data = await res.json();
+        loading.set(true);
+        try {
+            const res = await fetch(`https://plevortapi.fryde.id.lv/v1/message/read?cid=${chatId}&p=${page}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await res.json();
 
-        if (data.messages.length === 0) {
-            canLoadMore.set(false);
-        } else {
-            const fetchedMessages = data.messages.reverse();
-
-            if (initialLoad) {
-                messages.set(fetchedMessages);
-                scrollToBottom();
+            if (data.messages.length === 0) {
+                canLoadMore.set(false);
             } else {
-                const previousHeight = chatContainer.scrollHeight;
+                const fetchedMessages = data.messages.reverse();
 
-                messages.update(current => [...current, ...fetchedMessages]);
+                if (initialLoad) {
+                    messages.set(fetchedMessages);
+                    scrollToBottom();
+                } else {
+                    const previousHeight = chatContainer.scrollHeight;
 
-                setTimeout(() => {
-                    const newHeight = chatContainer.scrollHeight;
-                    chatContainer.scrollTop = newHeight - previousHeight;
-                }, 0);
+                    messages.update(current => [...current, ...fetchedMessages]);
+
+                    setTimeout(() => {
+                        const newHeight = chatContainer.scrollHeight;
+                        chatContainer.scrollTop = newHeight - previousHeight;
+                    }, 0);
+                }
+
+                currentPage = page;
             }
-
-            currentPage = page;
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        } finally {
+            loading.set(false);
         }
-    } catch (error) {
-        console.error('Error fetching messages:', error);
-    } finally {
-        loading.set(false);
     }
-}
 
     async function sendMessage() {
         if (!newMessage.trim()) return;
@@ -80,9 +80,9 @@
                 })
             });
             const data = await res.json();
-            
+
             if (data.messageId) {
-                newMessage = ''; // Clear the input without adding the message manually
+                newMessage = '';
                 scrollToBottom();
             }
         } catch (error) {
@@ -114,7 +114,7 @@
 
         socket.on('newMessage', (message) => {
             if (message.chatId === chatId) {
-                messages.update(current => [message, ...current]); // Add new messages at the top
+                messages.update(current => [message, ...current]);
                 scrollToBottom();
             }
         });
@@ -173,6 +173,7 @@
     .chat-wrapper {
         display: flex;
         height: 100vh;
+        flex-direction: row;
     }
 
     .chat-container {
@@ -288,6 +289,10 @@
     @media (min-width: 776px) {
         .sidebar-toggle {
             display: none;
+        }
+
+        .chat-wrapper {
+            flex-direction: row;
         }
     }
 </style>

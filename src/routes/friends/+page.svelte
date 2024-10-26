@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { socketStore } from '../../stores/socket.js';
     import "$lib/global.css";
+    import { writable } from 'svelte/store';
 
     let friends = [];
     let incomingRequests = [];
@@ -9,6 +10,7 @@
     let socket;
     let feedbackMessage = '';
     let feedbackColor = ''; 
+    const isMobile = writable(false);
 
     const getToken = () => localStorage.getItem('token');
 
@@ -104,7 +106,15 @@
         fetchFriends();
         fetchIncomingRequests();
 
+        const updateScreenWidth = () => {
+            isMobile.set(window.innerWidth < 600);
+        };
+
+        updateScreenWidth();
+        window.addEventListener('resize', updateScreenWidth);
+
         return () => {
+            window.removeEventListener('resize', updateScreenWidth);
             unsubscribe();
         };
     });
@@ -144,7 +154,13 @@
     };
 </script>
 
-<div>
+{#if $isMobile}
+    <button class="back-button" on:click={() => window.history.back()}>
+        ← Back
+    </button>
+{/if}
+
+<div class="main-content">
     <h2>Friends List</h2>
     {#if friends.length === 0}
         <p>No friends found.</p>
@@ -189,125 +205,138 @@
 </div>
 
 <style>
-    /* General dark theme styling */
-body {
-    background-color: #1c1c1c; /* Dark background */
-    color: #eaeaea; /* Light text */
-    font-family: Arial, sans-serif;
-}
-
-h2 {
-    color: #ffffff; /* White for headers */
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-}
-
-/* Container styling */
-div {
-    max-width: 600px;
-    margin: 20px auto;
-    padding: 20px;
-    border: 1px solid #444; /* Darker border */
-    border-radius: 8px;
-    background-color: #2a2a2a; /* Slightly lighter dark background */
-}
-
-/* Scrollable friend list and requests */
-.friend-list, .incoming-requests {
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: #333; /* Darker background for lists */
-    border-radius: 5px;
-    max-height: 200px; /* Limit height */
-    overflow-y: auto; /* Enable scrolling */
-}
-
-/* Individual friend or request */
-.friend, .request {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #555; /* Darker border */
-    font-size: 1em;
-}
-
-.friend:last-child, .request:last-child {
-    border-bottom: none;
-}
-
-button {
-    background-color: #4a4a4a; /* Dark button */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 0.9em;
-}
-
-button:hover {
-    background-color: #606060; /* Slightly lighter on hover */
-}
-
-/* Input field for adding a friend */
-.add-friend {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-}
-
-.add-friend input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #555;
-    border-radius: 5px;
-    background-color: #2a2a2a;
-    color: #eaeaea;
-    font-size: 1em;
-    transition: border-color 0.3s;
-}
-
-.add-friend input::placeholder {
-    color: #999; /* Lighter placeholder text */
-}
-
-.add-friend input:focus {
-    border-color: #4a90e2; /* Blue border on focus */
-    outline: none;
-}
-
-.add-friend button {
-    background-color: #4a90e2; /* Blue button for adding friends */
-    padding: 10px 20px;
-    font-size: 1em;
-}
-
-.add-friend button:hover {
-    background-color: #357ab9; /* Slightly darker blue on hover */
-}
-
-/* Mobile responsiveness */
-@media (max-width: 600px) {
-    div {
-        padding: 15px; /* Adjust padding on mobile */
+    body {
+        background-color: #1c1c1c;
+        color: #eaeaea;
+        font-family: Arial, sans-serif;
     }
 
     h2 {
-        font-size: 1.25rem; /* Smaller font size for headings */
+        color: #ffffff;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+
+    .main-content {
+        max-width: 600px;
+        margin: 60px auto 20px; /* Adds margin from the top to create space for the back button */
+        padding: 20px;
+        border: 1px solid #444;
+        border-radius: 8px;
+        background-color: #2a2a2a;
+    }
+
+    .friend-list, .incoming-requests {
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #333;
+        border-radius: 5px;
+        max-height: 200px;
+        overflow-y: auto;
     }
 
     .friend, .request {
-        flex-direction: column; /* Stack items vertically */
-        align-items: flex-start;
-        padding: 10px 0; /* Extra padding for spacing */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #555;
+        font-size: 1em;
+    }
+
+    .friend:last-child, .request:last-child {
+        border-bottom: none;
     }
 
     button {
-        width: 100%; /* Full width for buttons on mobile */
-        padding: 10px;
-        margin-top: 5px; /* Extra margin for spacing */
+        background-color: #4a4a4a;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-size: 0.9em;
     }
-}
+
+    button:hover {
+        background-color: #606060;
+    }
+
+    .add-friend {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .add-friend input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #555;
+        border-radius: 5px;
+        background-color: #2a2a2a;
+        color: #eaeaea;
+        font-size: 1em;
+        transition: border-color 0.3s;
+    }
+
+    .add-friend input::placeholder {
+        color: #999;
+    }
+
+    .add-friend input:focus {
+        border-color: #4a90e2;
+        outline: none;
+    }
+
+    .add-friend button {
+        background-color: #4a90e2;
+        padding: 10px 20px;
+        font-size: 1em;
+    }
+
+    .add-friend button:hover {
+        background-color: #357ab9;
+    }
+
+    .back-button {
+        background: #357ab9;
+        color: #eaeaea;
+        font-size: 1em;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        cursor: pointer;
+        display: block;
+    }
+
+    @media (max-width: 600px) {
+        .main-content {
+            padding: 15px;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+        }
+
+        .friend, .request {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 10px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+        }
+
+        .add-friend {
+            flex-direction: column;
+            gap: 5px;
+        }
+    }
 </style>
