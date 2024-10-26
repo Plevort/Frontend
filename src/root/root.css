@@ -1,0 +1,20 @@
+/* /src/root/root.css */
+.root {
+    background-color: #f0f8ff; 
+    color: #333; 
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    font-size: 1.25rem;
+    line-height: 1.5;
+  }
+  
