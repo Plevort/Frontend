@@ -5,7 +5,7 @@ import './root.css';
 function Root() {
   return (
     <div className="root">
-      <h1>prevolt</h1>
+      <h1>Plevort</h1>
       <p>rewrite soon</p>
     </div>
   );
