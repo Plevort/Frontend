@@ -15,32 +15,48 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${config.API_URL}/v1/login`, 
-                { email, password }, 
-                {
-                    validateStatus: (status) => status >= 200 && status < 300
-                }
-            );
+            const response = await axios.post(`${config.API_URL}/v1/login`, { email, password });
             
-            console.log("Response from server:", response);
-
-            if (response.data.success) {
-                setMessage(response.data.message);
+            console.log("Full response:", response);
+            console.log("Response status:", response.status);
+            console.log("Response data:", response.data);
+            
+            if (response.data && response.data.success) {
+                setMessage(response.data.message || 'Login successful');
                 setIsError(false);
-                localStorage.setItem('token', response.data.token);
+                
+                // Check if localStorage is accessible before attempting to use it
+                try {
+                    if (typeof window !== "undefined" && window.localStorage) {
+                        localStorage.setItem('token', response.data.token);
+                    } else {
+                        console.warn("localStorage is not accessible.");
+                    }
+                } catch (storageError) {
+                    console.error("localStorage access error:", storageError);
+                    setMessage('Unable to save login data locally.');
+                    setIsError(true);
+                    return; // Stop further actions if localStorage fails
+                }
+    
                 setTimeout(() => navigate('/'), 1500);
             } else {
-                setMessage(response.data.message);
+                setMessage(response.data.message || 'Login failed.');
                 setIsError(true);
             }
         } catch (error) {
-            console.error("Error during login request:", error);
+            console.error("Error object:", error);
             
-            setMessage('Something went wrong. Please try again.');
+            if (error.response && error.response.data && error.response.data.message) {
+                setMessage(error.response.data.message);
+            } else {
+                setMessage('Something went wrong. Please try again.');
+            }
             setIsError(true);
         }
     };
-
+    
+    
     return (
         <div className="login-container">
             <form className="login-form" onSubmit={handleLogin}>
