@@ -1,3 +1,4 @@
+// /src/sidebar/sidebar.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import config from '../config';
@@ -5,7 +6,6 @@ import './sidebar.css';
 
 const Sidebar = () => {
     const [chats, setChats] = useState([]);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -35,43 +35,27 @@ const Sidebar = () => {
     };
 
     return (
-        <>
-            <button 
-                className="sidebar-toggle" 
-                onClick={() => setSidebarOpen(true)}
-                style={{ display: sidebarOpen ? 'none' : 'block' }}
-            >
-                ☰
-            </button>
-            
-            <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-                <button 
-                    className="close-sidebar" 
-                    onClick={() => setSidebarOpen(false)}
-                >
-                    ✖
-                </button>
-                <div className="sidebar-header">
-                    <button onClick={() => handleRedirect('/friends')} className="header-button">Friends</button>
-                    <button onClick={() => handleRedirect('/create-chat')} className="header-button">Create Chat</button>
-                </div>
-                <div className="chat-list">
-                    {chats.map(chat => (
-                        <div 
-                            key={chat.id} 
-                            className="chat-item" 
-                            onClick={() => handleRedirect(`/chat/${chat.id}`)}
-                        >
-                            <img src="https://plevort.fryde.id.lv/default.png" alt="Profile" className="chat-pfp" />
-                            <div className="chat-info">
-                                <div className="chat-name">{chat.name}</div>
-                                <div className="chat-last-message">{chat.lastMessage}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+        <div className="sidebar">
+            <div className="sidebar-header">
+                <button onClick={() => handleRedirect('/friends')} className="header-button">Friends</button>
+                <button onClick={() => handleRedirect('/create-chat')} className="header-button">Create Chat</button>
             </div>
-        </>
+            <div className="chat-list">
+                {chats.map(chat => (
+                    <div 
+                        key={chat.id} 
+                        className="chat-item" 
+                        onClick={() => handleRedirect(`/chat/${chat.id}`)}
+                    >
+                        <img src="https://plevort.fryde.id.lv/default.png" alt="Profile" className="chat-pfp" />
+                        <div className="chat-info">
+                            <div className="chat-name">{chat.name}</div>
+                            <div className="chat-last-message">{chat.lastMessage}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 };
 
